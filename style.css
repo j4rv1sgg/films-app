@@ -28,6 +28,8 @@ ul{
     top: 0;
     left: 0;
     background-color: rgb(0, 0, 0);
+    display: flex;
+    justify-content: center;
 }
 .films__wrapper{
     color: rgb(48, 48, 48);
@@ -37,6 +39,7 @@ ul{
     display: flex;
     padding: 15px;
     padding-top: 50px;
+    
 }
 .films__search{
     width: 40%;
@@ -60,4 +63,15 @@ ul{
 .films__cards-item{
     display: flex;
     flex-direction: column;
+}
+.card__onPage{
+    text-align: center;
+    font-weight: bold;
+    
+}
+.timer__input{
+    height: 30px;
+}
+.timer{
+    font-weight: bold;
 }

@@ -1,6 +1,78 @@
 
-let options;
+let options
 let selectedOptions = []
+let isRequestPending = false; 
+let isTimerRunning = false
+//////////////////////////////////////////////////////////////////////////////
+let countdown
+let currentLatency = 0;
+let timerCounter = document.querySelector('.timer')
+
+let customButton = document.querySelector('.timer__custom')
+let timerButtons = document.querySelector('.timer__buttons')
+
+let timer0 = document.querySelector('.timer__immediately')
+let timer5 = document.querySelector('.timer__5')
+let timer10 = document.querySelector('.timer__10')
+
+addOnClick(timer0, ()=>currentLatency = 0)
+addOnClick(timer5, ()=>currentLatency = 5)
+addOnClick(timer10, ()=>currentLatency = 10)
+
+
+addOnClick(customButton, ()=>createTimerInput(timerButtons))
+
+function createTimerInput(element) {
+    let createdInput = document.querySelector('.timer__custom-input')
+    if(!createdInput){
+        const timerInputTemplate = `
+        <input class="timer__custom-input" type="number">
+        `;
+        element.insertAdjacentHTML('afterend', timerInputTemplate);
+    } else { createdInput.remove()
+
+    }
+  
+    
+}
+  
+  
+
+function timer(seconds, cb) {
+    isTimerRunning = true
+    const now = Date.now();
+    const then = now + seconds * 1000;
+
+    countdown = setInterval(() => {
+    const secondsLeft = Math.round((then - Date.now()) / 1000)
+    if (secondsLeft < 0){
+        clearInterval(countdown)
+        cb()
+        isTimerRunning = false
+        return
+    }
+
+    displayTimeLeft(secondsLeft)
+    
+
+    }, 1000);
+    
+}
+
+
+
+
+function displayTimeLeft(seconds){
+    const minutesLeft = Math.floor(seconds / 60)
+    const secondsLeft = seconds % 60;
+    timerCounter.textContent = `${minutesLeft < 10 ? '0' + minutesLeft : minutesLeft}:${secondsLeft < 10 ? '0' + secondsLeft : secondsLeft}`
+}
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////
 
 let input = document.querySelector('.films__search-input')
 createDropdown(input, 'dropdown')
@@ -19,7 +91,6 @@ function setVisible(element, value){
 function createDropdown(input, className){
     let dropdown = document.createElement('ul')
     dropdown.className = className;
-    // fillOptions(dropdown, options)
     input.insertAdjacentElement('afterend', dropdown)
     
 }
@@ -29,10 +100,15 @@ function fillOptions(ul, options){
     options.map((item)=>{
         let li = document.createElement('li')
         li.textContent = item.show.name
-        addOnClick(li, ()=>addToFavorite(item.show.id))
+        addOnClick(li, ()=>setTimer(item.show.id))//
         ul.appendChild(li)
     })
 }
+function setTimer(id){
+    !isTimerRunning ? timer(currentLatency, ()=>addToFavorite(id)) : console.log('Timer already is running')
+    
+}
+
 
 function addOnClick(element, func){
     element.addEventListener('click', func)
@@ -54,14 +130,18 @@ async function onInput(e){
 }
 
 async function request(value){
-    const response = await fetch(`https://api.tvmaze.com/search/shows?q=${value}`)
-    options = await response.json()
-    
-    
-    return options
+    if(!isRequestPending){
+        isRequestPending = true
+        const response = await fetch(`https://api.tvmaze.com/search/shows?q=${value}`)
+        options = await response.json()
+        isRequestPending = false
+        return options
+    }
+   
 }
 
 function addToFavorite(id){
+    
     let item = options.find((item) => id == item.show.id)
     if (!selectedOptions.includes(item)){
         selectedOptions.push(item)
@@ -81,11 +161,15 @@ function drawShowCard(item, placeToInsert){
 
     let img = document.createElement('img')
 
-    if(item.show.image.medium == null){
+    if(item.show.image.medium !== null){
         img.src = item.show.image.medium
-    } else img.src = 'https://www.shutterstock.com/image-illustration/no-picture-available-placeholder-thumbnail-260nw-2226533855.jpg'
+    } else {
+        img.src = 'https://www.shutterstock.com/image-illustration/no-picture-available-placeholder-thumbnail-260nw-2226533855.jpg'
+    }
     
     img.className = 'card__img'
+
+    addOnClick(img, ()=>showInterface(false, item))
 
     card.appendChild(img)
 
@@ -97,8 +181,10 @@ function drawShowCard(item, placeToInsert){
     let removeButton = document.createElement('button')
     removeButton.className = 'card__remove'
     removeButton.textContent = 'Remove'
-    addOnClick(removeButton, ()=>{
 
+    addOnClick(removeButton, ()=>{
+        card.remove()
+        selectedOptions = selectedOptions.filter((el)=>el === item)
     })
 
     card.appendChild(removeButton)
@@ -107,143 +193,55 @@ function drawShowCard(item, placeToInsert){
 
 }
 
+function renderShowPage(item){                       /////////////Peredelat'
+    let backButton = document.createElement('div')
+    backButton.innerHTML = 'Go back'
+    backButton.style.color = 'white'
+    
+    let showPage = document.createElement('div')
+    showPage.innerHTML = drawCardOnPage(item)
+    showPage.style.margin = "0 auto"
+    document.querySelector('.films__wrapper').appendChild(showPage)
+
+    addOnClick(backButton, ()=>{
+                                showInterface(true, item)
+                                showPage.remove()
+                                backButton.remove()
+                                })
+    document.querySelector('.top-bar').appendChild(backButton)
+    
+}
+
+function drawCardOnPage(item){
+    return `
+        <div class="card__onPage">
+            <p>${item.show.name}</p>
+            <img src="${item.show.image.medium !== null ? item.show.image.medium : 'https://www.shutterstock.com/image-illustration/no-picture-available-placeholder-thumbnail-260nw-2226533855.jpg'}" />
+            <p>Genres: ${item.show.genres.join(', ')}</p>
+            <p>Language: ${item.show.language}</p>
+            </br>
+            <p>Status: ${item.show.status} </p>
+        `
+}
+
+function showInterface(value, item){
+    let search = document.querySelector('.films__search')
+    let cards = document.querySelector('.films__cards')
+
+    if(value){
+        search.style.display = 'block'
+        cards.style.display = 'block'
+    } else {
+        search.style.display = 'none'
+        cards.style.display = 'none'
+        
+        renderShowPage(item)
+
+    }
+}
 
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-// {"score":0.90978205,
-// "show":{"id":139,
-// "url":"https://www.tvmaze.com/shows/139/girls",
-// "name":"Girls",
-// "type":"Scripted",
-// "language":"English",
-// "genres":["Drama","Romance"],
-// "status":"Ended","runtime":30,
-// "averageRuntime":30,
-// "premiered":"2012-04-15",
-// "ended":"2017-04-16",
-// "officialSite":"http://www.hbo.com/girls",
-// "schedule":{"time":"22:00","days":["Sunday"]},
-// "rating":{"average":6.6},
-// "weight":97,
-// "network":{"id":8,"name":"HBO","country":{"name":"United States","code":"US","timezone":"America/New_York"},
-// "officialSite":"https://www.hbo.com/"},
-// "webChannel":null,
-// "dvdCountry":null,
-// "externals":{"tvrage":30124,"thetvdb":220411,"imdb":"tt1723816"},
-// "image":{"medium":"https://static.tvmaze.com/uploads/images/medium_portrait/31/78286.jpg",
-// "original":"https://static.tvmaze.com/uploads/images/original_untouched/31/78286.jpg"},
-// "summary":"<p>This Emmy winning series is a comic look at the assorted humiliations and rare triumphs of a group of girls in their 20s.</p>",
-// "updated":1611310521,
-// "_links":{"self":{"href":"https://api.tvmaze.com/shows/139"},
-// "previousepisode":{"href":"https://api.tvmaze.com/episodes/1079686"}}}}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// let countdown;
-// let timerDiv = document.querySelector('.timer')
-// let input = document.querySelector('.input')
-// let button = document.querySelector('.ok')
-// button.addEventListener('click', () => {!isRunning ? start(input) : alert('Timer is already running!')})
-// let isRunning = false
-
-
-
-// function timer(seconds) {
-//   isRunning = true
-//   const now = Date.now();
-//   const then = now + seconds * 1000;
-
-//   displayTimeLeft(seconds)
- 
-//   countdown = setInterval(() => {
-//     const secondsLeft = Math.round((then - Date.now()) / 1000)
-//     if (secondsLeft < 0){
-//         clearInterval(countdown)
-//         timerDiv.textContent = "Sosi huy"
-//         isRunning = false
-//         return
-//     }
-//     displayTimeLeft(secondsLeft)
-//   }, 1000);
-  
-//   }
-
-
-
-// function displayTimeLeft(seconds){
-//     const minutesLeft = Math.floor(seconds / 60)
-//     const secondsLeft = seconds % 60;
-//     timerDiv.textContent = `${minutesLeft < 10 ? '0' + minutesLeft : minutesLeft}:${secondsLeft < 10 ? '0' + secondsLeft : secondsLeft}`
-// }
-// function start(input){
-//     timer(input.value)
-
-// }
-
-
-
-
- 

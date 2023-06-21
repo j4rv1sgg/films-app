@@ -3,9 +3,16 @@ let options
 let selectedOptions = []
 let isRequestPending = false; 
 let isTimerRunning = false
+
 //////////////////////////////////////////////////////////////////////////////
+
 let countdown
 let currentLatency = 0;
+
+function setLatency(value){
+    currentLatency = value;
+}
+
 let timerCounter = document.querySelector('.timer')
 
 let customButton = document.querySelector('.timer__custom')
@@ -15,22 +22,31 @@ let timer0 = document.querySelector('.timer__immediately')
 let timer5 = document.querySelector('.timer__5')
 let timer10 = document.querySelector('.timer__10')
 
-addOnClick(timer0, ()=>currentLatency = 0)
-addOnClick(timer5, ()=>currentLatency = 5)
-addOnClick(timer10, ()=>currentLatency = 10)
+addOnClick(timer0, ()=>setLatency(0))
+addOnClick(timer5, ()=>setLatency(5))
+addOnClick(timer10, ()=>setLatency(10))
 
 
 addOnClick(customButton, ()=>createTimerInput(timerButtons))
 
 function createTimerInput(element) {
     let createdInput = document.querySelector('.timer__custom-input')
+    let createdButton = document.querySelector('.timer__custom-button')
+
     if(!createdInput){
         const timerInputTemplate = `
         <input class="timer__custom-input" type="number">
+        <button class="timer__custom-button">OK</button>
         `;
         element.insertAdjacentHTML('afterend', timerInputTemplate);
-    } else { createdInput.remove()
 
+        createdButton = document.querySelector('.timer__custom-button')
+        createdInput = document.querySelector('.timer__custom-input')
+
+        addOnClick(createdButton, ()=>setLatency(createdInput.value))
+        
+    } else { createdInput.remove()
+             createdButton.remove()
     }
   
     
@@ -42,7 +58,7 @@ function timer(seconds, cb) {
     isTimerRunning = true
     const now = Date.now();
     const then = now + seconds * 1000;
-
+    displayTimeLeft(seconds)
     countdown = setInterval(() => {
     const secondsLeft = Math.round((then - Date.now()) / 1000)
     if (secondsLeft < 0){
@@ -100,7 +116,7 @@ function fillOptions(ul, options){
     options.map((item)=>{
         let li = document.createElement('li')
         li.textContent = item.show.name
-        addOnClick(li, ()=>setTimer(item.show.id))//
+        addOnClick(li, ()=>currentLatency ? setTimer(item.show.id) : addToFavorite(item.show.id))//
         ul.appendChild(li)
     })
 }
@@ -226,15 +242,16 @@ function drawCardOnPage(item){
 
 function showInterface(value, item){
     let search = document.querySelector('.films__search')
-    let cards = document.querySelector('.films__cards')
+    let timer = document.querySelector('.films__timer')
 
     if(value){
         search.style.display = 'block'
         cards.style.display = 'block'
+        timer.style.display = 'block'
     } else {
         search.style.display = 'none'
         cards.style.display = 'none'
-        
+        timer.style.display = 'none'
         renderShowPage(item)
 
     }

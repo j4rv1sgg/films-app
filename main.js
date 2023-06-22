@@ -1,7 +1,7 @@
 
 let options
 let selectedOptions = []
-let isRequestPending = false; 
+
 let isTimerRunning = false
 
 //////////////////////////////////////////////////////////////////////////////
@@ -86,10 +86,6 @@ function displayTimeLeft(seconds){
 
 
 
-
-
-////////////////////////////////////////////////////////////////////////////////////////
-
 let input = document.querySelector('.films__search-input')
 createDropdown(input, 'dropdown')
 let dropdown = document.querySelector('.dropdown')
@@ -120,11 +116,11 @@ function fillOptions(ul, options){
         ul.appendChild(li)
     })
 }
+
 function setTimer(id){
     !isTimerRunning ? timer(currentLatency, ()=>addToFavorite(id)) : console.log('Timer already is running')
     
 }
-
 
 function addOnClick(element, func){
     element.addEventListener('click', func)
@@ -134,27 +130,46 @@ async function addOnInput(input, func){
     input.addEventListener('input', (e) => func(e))
 }
 
+
+let currentRequest = null;
+
 async function onInput(e){
     if(e.target.value.trim()){
-        await request(e.target.value).then(()=>{
+
+        if (currentRequest) {
+            currentRequest.abort();
+            
+        }
+
+        const controller = new AbortController();
+        currentRequest = controller;
+        
+        try {
+            await request(e.target.value, controller.signal).then(()=>{
             fillOptions(dropdown, options)
             setVisible(dropdown, true)
         })
-        
-        
+        } catch (error) {
+            if (error.name === 'AbortError') {
+              console.log('Request was cancelled');
+            } else {
+              console.log('Error:', error.message);
+            }
+        }
     } else setVisible(dropdown, false)
 }
 
-async function request(value){
-    if(!isRequestPending){
-        isRequestPending = true
-        const response = await fetch(`https://api.tvmaze.com/search/shows?q=${value}`)
-        options = await response.json()
-        isRequestPending = false
-        return options
-    }
+
+async function request(value, signal){
+    
+    const response = await fetch(`https://api.tvmaze.com/search/shows?q=${value}`, { signal })
+    options = await response.json()
+    
+    return options
+    
    
 }
+
 
 function addToFavorite(id){
     

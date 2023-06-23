@@ -1,33 +1,27 @@
-
 let options
 let selectedOptions = []
-
 let isTimerRunning = false
-
-//////////////////////////////////////////////////////////////////////////////
-
 let countdown
 let currentLatency = 0;
 
-function setLatency(value){
-    currentLatency = value;
-}
+let timerCounter = document.querySelector('[data-name="timer"]')
 
-let timerCounter = document.querySelector('.timer')
-
-let customButton = document.querySelector('.timer__custom')
+let customButton = document.querySelector('[data-name="timer-custom"]')
 let timerButtons = document.querySelector('.timer__buttons')
 
-let timer0 = document.querySelector('.timer__immediately')
-let timer5 = document.querySelector('.timer__5')
-let timer10 = document.querySelector('.timer__10')
+let timer0 = document.querySelector('[data-name="timer-immediately"]')
+let timer5 = document.querySelector('[data-name="timer-5"]')
+let timer10 = document.querySelector('[data-name="timer-10"]')
 
 addOnClick(timer0, ()=>setLatency(0))
 addOnClick(timer5, ()=>setLatency(5))
 addOnClick(timer10, ()=>setLatency(10))
 
-
 addOnClick(customButton, ()=>createTimerInput(timerButtons))
+
+function setLatency(value){
+    currentLatency = value;
+}
 
 function createTimerInput(element) {
     let createdInput = document.querySelector('.timer__custom-input')
@@ -51,10 +45,10 @@ function createTimerInput(element) {
   
     
 }
-  
-  
+   
 
 function timer(seconds, cb) {
+    
     isTimerRunning = true
     const now = Date.now();
     const then = now + seconds * 1000;
@@ -70,12 +64,9 @@ function timer(seconds, cb) {
 
     displayTimeLeft(secondsLeft)
     
-
     }, 1000);
     
 }
-
-
 
 
 function displayTimeLeft(seconds){
@@ -191,8 +182,8 @@ function drawShowCard(item, placeToInsert){
     card.appendChild(title)
 
     let img = document.createElement('img')
-
-    if(item.show.image.medium !== null){
+    
+    if(item.show.image !== null){
         img.src = item.show.image.medium
     } else {
         img.src = 'https://www.shutterstock.com/image-illustration/no-picture-available-placeholder-thumbnail-260nw-2226533855.jpg'
@@ -224,7 +215,7 @@ function drawShowCard(item, placeToInsert){
 
 }
 
-function renderShowPage(item){                       /////////////Peredelat'
+function renderShowPage(item){                       
     let backButton = document.createElement('div')
     backButton.innerHTML = 'Go back'
     backButton.style.color = 'white'

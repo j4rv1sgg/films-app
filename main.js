@@ -29,14 +29,15 @@ function createTimerInput(element) {
 
     if(!createdInput){
         const timerInputTemplate = `
-        <input class="timer__custom-input" type="number">
-        <button class="timer__custom-button">OK</button>
+        <input data-name="timer-custom-input" type="number">
+        <button data-name="timer-custom-button">OK</button>
         `;
         element.insertAdjacentHTML('afterend', timerInputTemplate);
 
-        createdButton = document.querySelector('.timer__custom-button')
-        createdInput = document.querySelector('.timer__custom-input')
-
+        createdButton = document.querySelector('[data-name="timer-custom-button"]')
+        createdInput = document.querySelector('[data-name="timer-custom-input"]')
+        
+        createdInput.onkeydown = () => handleInput(event);
         addOnClick(createdButton, ()=>setLatency(createdInput.value))
         
     } else { createdInput.remove()
@@ -57,7 +58,7 @@ function timer(seconds, cb) {
 
     countdown = setInterval(() => {
         const secondsLeft = Math.round((endTime - Date.now()) / 1000)
-        
+
         if (secondsLeft < 0){
             clearInterval(countdown)
             cb()
@@ -76,6 +77,12 @@ function displayTimeLeft(seconds){
     const secondsLeft = seconds % 60;
     timerCounter.textContent = `${minutesLeft < 10 ? '0' + minutesLeft : minutesLeft}:${secondsLeft < 10 ? '0' + secondsLeft : secondsLeft}`
 }
+
+function handleInput(event) {
+    if (event.key === '+' || event.key === '-' || event.key === '.' || event.key === ',') {
+      event.preventDefault();
+    } 
+  }
 
 
 

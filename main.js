@@ -48,22 +48,24 @@ function createTimerInput(element) {
    
 
 function timer(seconds, cb) {
-    
     isTimerRunning = true
-    const now = Date.now();
-    const then = now + seconds * 1000;
-    displayTimeLeft(seconds)
-    countdown = setInterval(() => {
-    const secondsLeft = Math.round((then - Date.now()) / 1000)
-    if (secondsLeft < 0){
-        clearInterval(countdown)
-        cb()
-        isTimerRunning = false
-        return
-    }
 
-    displayTimeLeft(secondsLeft)
+    const currentTime = Date.now();
+    const endTime  = currentTime + seconds * 1000;
     
+    displayTimeLeft(seconds)
+
+    countdown = setInterval(() => {
+        const secondsLeft = Math.round((endTime - Date.now()) / 1000)
+        
+        if (secondsLeft < 0){
+            clearInterval(countdown)
+            cb()
+            isTimerRunning = false
+            return
+        }
+
+        displayTimeLeft(secondsLeft)
     }, 1000);
     
 }

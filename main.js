@@ -43,13 +43,11 @@ function createTimerInput(element) {
     } else { createdInput.remove()
              createdButton.remove()
     }
-  
-    
 }
-   
 
 function timer(seconds, cb) {
     isTimerRunning = true
+    addStopButton()
 
     const currentTime = Date.now();
     const endTime  = currentTime + seconds * 1000;
@@ -69,8 +67,8 @@ function timer(seconds, cb) {
         displayTimeLeft(secondsLeft)
     }, 1000);
     
+    
 }
-
 
 function displayTimeLeft(seconds){
     const minutesLeft = Math.floor(seconds / 60)
@@ -78,18 +76,31 @@ function displayTimeLeft(seconds){
     timerCounter.textContent = `${minutesLeft < 10 ? '0' + minutesLeft : minutesLeft}:${secondsLeft < 10 ? '0' + secondsLeft : secondsLeft}`
 }
 
+
+function addStopButton(){
+    let button = document.createElement('button')
+    button.textContent = 'Cancel'
+
+    addOnClick(button, ()=>{
+        clearInterval(countdown)
+        button.remove()
+        timerCounter.textContent = "00:00"
+    })
+    
+    timerCounter.insertAdjacentElement('afterend', button)
+    
+}
+
 function handleInput(event) {
     if (event.key === '+' || event.key === '-' || event.key === '.' || event.key === ',') {
       event.preventDefault();
     } 
-  }
+}
 
-
-
-let input = document.querySelector('.films__search-input')
+let input = document.querySelector('[data-name="films-search-input"]')
 createDropdown(input, 'dropdown')
-let dropdown = document.querySelector('.dropdown')
 
+let dropdown = document.querySelector('.dropdown')
 let cards = document.querySelector('.films__cards')
 
 setVisible(dropdown, false);

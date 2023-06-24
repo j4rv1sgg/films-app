@@ -47,26 +47,27 @@ function createTimerInput(element) {
 
 function timer(seconds, cb) {
     isTimerRunning = true
-    addStopButton()
-
+    
+    let removeCancelButton = addStopButton()
     const currentTime = Date.now();
     const endTime  = currentTime + seconds * 1000;
     
     displayTimeLeft(seconds)
-
+    
     countdown = setInterval(() => {
         const secondsLeft = Math.round((endTime - Date.now()) / 1000)
 
         if (secondsLeft < 0){
             clearInterval(countdown)
             cb()
+            removeCancelButton()
             isTimerRunning = false
             return
         }
 
         displayTimeLeft(secondsLeft)
     }, 1000);
-    
+   
     
 }
 
@@ -89,6 +90,10 @@ function addStopButton(){
     
     timerCounter.insertAdjacentElement('afterend', button)
     
+    function removeButton(){
+        button.remove()
+    }
+    return removeButton
 }
 
 function handleInput(event) {

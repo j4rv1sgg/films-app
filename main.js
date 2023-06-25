@@ -24,24 +24,24 @@ function setLatency(value){
 }
 
 function createTimerInput(element) {
-    let createdInput = document.querySelector('.timer__custom-input')
-    let createdButton = document.querySelector('.timer__custom-button')
-
-    if(!createdInput){
+    let createdInput = document.querySelector('[data-name="timer-custom-input"]');
+    let createdButton = document.querySelector('[data-name="timer-custom-button"]');
+    
+    if (!createdInput || !createdButton) {
         const timerInputTemplate = `
         <input data-name="timer-custom-input" type="number">
         <button data-name="timer-custom-button">OK</button>
         `;
         element.insertAdjacentHTML('afterend', timerInputTemplate);
 
-        createdButton = document.querySelector('[data-name="timer-custom-button"]')
-        createdInput = document.querySelector('[data-name="timer-custom-input"]')
-        
+        createdInput = document.querySelector('[data-name="timer-custom-input"]');
+        createdButton = document.querySelector('[data-name="timer-custom-button"]');
+
         createdInput.onkeydown = () => handleInput(event);
         addOnClick(createdButton, ()=>setLatency(createdInput.value))
-        
-    } else { createdInput.remove()
-             createdButton.remove()
+    } else { 
+            createdInput.remove()
+            createdButton.remove()
     }
 }
 
@@ -84,6 +84,7 @@ function addStopButton(){
 
     addOnClick(button, ()=>{
         clearInterval(countdown)
+        isTimerRunning = false
         removeButton()
         timerCounter.textContent = "00:00"
     })

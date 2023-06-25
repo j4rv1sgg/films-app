@@ -49,6 +49,7 @@ function timer(seconds, cb) {
     isTimerRunning = true
     
     let removeCancelButton = addStopButton()
+    
     const currentTime = Date.now();
     const endTime  = currentTime + seconds * 1000;
     
@@ -67,8 +68,7 @@ function timer(seconds, cb) {
 
         displayTimeLeft(secondsLeft)
     }, 1000);
-   
-    
+
 }
 
 function displayTimeLeft(seconds){
@@ -84,7 +84,7 @@ function addStopButton(){
 
     addOnClick(button, ()=>{
         clearInterval(countdown)
-        button.remove()
+        removeButton()
         timerCounter.textContent = "00:00"
     })
     
